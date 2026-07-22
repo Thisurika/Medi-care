@@ -1,24 +1,14 @@
 # Dependencies
 node_modules/
-backend/node_modules/
-frontend/node_modules/
 
-# Build & distribution outputs
+# Build outputs
 dist/
-frontend/dist/
-build/
+dist-ssr/
+*.local
 
 # Environment variables & secrets
 .env
 .env*.local
-backend/.env
-frontend/.env
-
-# Uploads & temporary files
-uploads/
-backend/uploads/
-tmp/
-temp/
 
 # Logs & debugging
 logs/
