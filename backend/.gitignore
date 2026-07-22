@@ -1,4 +1,4 @@
-# Node modules / dependencies
+# Dependencies
 node_modules/
 
 # Environment variables & secrets
@@ -7,6 +7,12 @@ node_modules/
 .env.production
 .env.staging
 
+# Uploads & temporary files
+uploads/*
+!uploads/.gitkeep
+tmp/
+temp/
+
 # Logs & debugging
 logs/
 *.log
@@ -14,11 +20,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-
-# Uploads & temporary files
-uploads/
-tmp/
-temp/
 
 # OS metadata & system files
 .DS_Store
