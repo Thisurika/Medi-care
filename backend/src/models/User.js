@@ -29,6 +29,12 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: String,
       default: '',
+      validate: {
+        validator: function(v) {
+          return v === '' || /^0[0-9]{9}$/.test(v);
+        },
+        message: 'Phone must be a valid Sri Lanka number (10 digits starting with 0, e.g. 0771234567)',
+      },
     },
     gender: {
       type: String,

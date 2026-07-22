@@ -7,13 +7,33 @@ export default function Register() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'patient', phone: '', gender: '' });
   const [error, setError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => setForm(p => ({ ...p, [e.target.name]: e.target.value }));
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'phone') {
+      // Allow digits only
+      const digits = value.replace(/\D/g, '');
+      setForm(p => ({ ...p, phone: digits }));
+      if (digits.length > 0 && (!/^0[0-9]{9}$/.test(digits))) {
+        setPhoneError('Enter a valid SL number (e.g. 0771234567)');
+      } else {
+        setPhoneError('');
+      }
+    } else {
+      setForm(p => ({ ...p, [name]: value }));
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    // Validate SL phone: exactly 10 digits starting with 0
+    if (form.phone && !/^0[0-9]{9}$/.test(form.phone)) {
+      setPhoneError('Enter a valid SL number (e.g. 0771234567)');
+      return;
+    }
     setLoading(true);
     try {
       await register(form);
@@ -53,8 +73,17 @@ export default function Register() {
               <input type="email" name="email" value={form.email} onChange={handleChange} className="form-control" placeholder="you@example.com" required />
             </div>
             <div className="form-group">
-              <label className="form-label">Phone</label>
-              <input type="text" name="phone" value={form.phone} onChange={handleChange} className="form-control" placeholder="+1 555 000 0000" />
+              <label className="form-label">Phone (SL)</label>
+              <input
+                type="tel"
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+                className={`form-control${phoneError ? ' input-error' : ''}`}
+                placeholder="0771234567"
+                maxLength={10}
+              />
+              {phoneError && <span style={{ color: '#f87171', fontSize: 11, marginTop: 3, display: 'block' }}>{phoneError}</span>}
             </div>
           </div>
 
