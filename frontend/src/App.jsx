@@ -2,17 +2,18 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
-import Login           from './pages/Login';
-import Register        from './pages/Register';
-import Dashboard       from './pages/Dashboard';
-import Appointments    from './pages/Appointments';
-import BookAppointment from './pages/BookAppointment';
+import Landing          from './pages/Landing';
+import Login            from './pages/Login';
+import Register         from './pages/Register';
+import Dashboard        from './pages/Dashboard';
+import Appointments     from './pages/Appointments';
+import BookAppointment  from './pages/BookAppointment';
 import AppointmentDetail from './pages/AppointmentDetail';
-import Reports         from './pages/Reports';
-import Messages        from './pages/Messages';
-import Feedback        from './pages/Feedback';
-import Doctors         from './pages/Doctors';
-import Services        from './pages/Services';
+import Reports          from './pages/Reports';
+import Messages         from './pages/Messages';
+import Feedback         from './pages/Feedback';
+import Doctors          from './pages/Doctors';
+import Services         from './pages/Services';
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           {/* Public */}
+          <Route path="/"         element={<Landing />} />
           <Route path="/login"    element={<Login />} />
           <Route path="/register" element={<Register />} />
 
@@ -38,10 +40,10 @@ export default function App() {
           <Route path="/services/new" element={<ProtectedRoute roles={['admin']}><Services /></ProtectedRoute>} />
 
           {/* Default redirect */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
   );
 }
+
