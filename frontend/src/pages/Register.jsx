@@ -5,7 +5,10 @@ import { useAuth } from '../context/AuthContext';
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'patient', phone: '', gender: '' });
+  const [form, setForm] = useState({
+    name: '', email: '', password: '', confirmPassword: '',
+    role: 'patient', phone: '', gender: '', address: ''
+  });
   const [error, setError] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -13,7 +16,6 @@ export default function Register() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'phone') {
-      // Allow digits only
       const digits = value.replace(/\D/g, '');
       setForm(p => ({ ...p, phone: digits }));
       if (digits.length > 0 && (!/^0[0-9]{9}$/.test(digits))) {
@@ -29,14 +31,20 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    // Validate SL phone: exactly 10 digits starting with 0
+
+    if (form.password !== form.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
     if (form.phone && !/^0[0-9]{9}$/.test(form.phone)) {
       setPhoneError('Enter a valid SL number (e.g. 0771234567)');
       return;
     }
+
     setLoading(true);
     try {
-      await register(form);
+      const { confirmPassword, ...payload } = form;
+      await register(payload);
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed.');
@@ -47,77 +55,134 @@ export default function Register() {
 
   return (
     <div className="auth-layout">
-      <div className="auth-card" style={{ maxWidth: 460 }}>
-        <div className="auth-logo">
-          <div style={{ width:38,height:38,borderRadius:9,background:'linear-gradient(135deg,#2563eb,#06b6d4)',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:14,color:'white' }}>M+</div>
-          <div>
-            <div style={{ fontWeight:700,fontSize:16,color:'var(--text-primary)' }}>MediCare Plus</div>
-            <div style={{ fontSize:11,color:'var(--text-muted)' }}>Quality healthcare, simplified.</div>
-          </div>
+      {/* ── Left hero ── */}
+      <div className="auth-hero-side">
+        <div className="auth-hero-pill">
+          <span className="auth-hero-pill-dot" />
+          Healthcare made human
         </div>
 
-        <div className="auth-title">Create account</div>
-        <div className="auth-sub">Start your healthcare journey today</div>
+        <h1 className="auth-hero-title">
+          Welcome to <span className="highlight">MediCare Plus</span>
+        </h1>
 
-        {error && <div className="error-msg">{error}</div>}
+        <p className="auth-hero-subtitle">
+          Book appointments, chat with your care team, and access medical
+          reports securely in one beautiful experience.
+        </p>
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label className="form-label">Full Name</label>
-            <input type="text" name="name" value={form.name} onChange={handleChange} className="form-control" placeholder="Dr. Jane Smith" required />
+        <div className="auth-hero-badge">
+          <div className="auth-hero-badge-icon">M+</div>
+          <div className="auth-hero-badge-text">
+            <h4>Blue/Teal dual-mode UI</h4>
+            <p>Glassmorphic cards with soft gradients</p>
           </div>
+        </div>
+      </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label">Email</label>
-              <input type="email" name="email" value={form.email} onChange={handleChange} className="form-control" placeholder="you@example.com" required />
+      {/* ── Right form ── */}
+      <div className="auth-form-side">
+        <div className="auth-card">
+          {/* Logo + label */}
+          <div className="auth-logo">
+            <div className="auth-logo-icon">M+</div>
+            <div>
+              <div className="auth-logo-label">Secure Access</div>
             </div>
+          </div>
+          <div className="auth-title">Sign in to your portal</div>
+
+          {error && <div className="error-msg">{error}</div>}
+
+          <form onSubmit={handleSubmit}>
+            {/* Row: Name + Phone */}
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Full name</label>
+                <input
+                  type="text" name="name" value={form.name}
+                  onChange={handleChange} className="form-control"
+                  placeholder="" required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Phone</label>
+                <input
+                  type="tel" name="phone" value={form.phone}
+                  onChange={handleChange}
+                  className={`form-control${phoneError ? ' input-error' : ''}`}
+                  placeholder="" maxLength={10}
+                />
+                {phoneError && (
+                  <span style={{ color: '#f87171', fontSize: 11, marginTop: 3, display: 'block' }}>
+                    {phoneError}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Row: Email + Gender */}
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Email</label>
+                <input
+                  type="email" name="email" value={form.email}
+                  onChange={handleChange} className="form-control"
+                  placeholder="" required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Gender</label>
+                <select
+                  name="gender" value={form.gender}
+                  onChange={handleChange} className="form-control"
+                >
+                  <option value="">Select</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Address */}
             <div className="form-group">
-              <label className="form-label">Phone (SL)</label>
+              <label className="form-label">Address</label>
               <input
-                type="tel"
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                className={`form-control${phoneError ? ' input-error' : ''}`}
-                placeholder="0771234567"
-                maxLength={10}
+                type="text" name="address" value={form.address}
+                onChange={handleChange} className="form-control"
+                placeholder=""
               />
-              {phoneError && <span style={{ color: '#f87171', fontSize: 11, marginTop: 3, display: 'block' }}>{phoneError}</span>}
             </div>
-          </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <input type="password" name="password" value={form.password} onChange={handleChange} className="form-control" placeholder="••••••••" required minLength={6} />
+            {/* Row: Password + Confirm */}
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Password</label>
+                <input
+                  type="password" name="password" value={form.password}
+                  onChange={handleChange} className="form-control"
+                  placeholder="" required minLength={6}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Confirm password</label>
+                <input
+                  type="password" name="confirmPassword" value={form.confirmPassword}
+                  onChange={handleChange} className="form-control"
+                  placeholder="" required minLength={6}
+                />
+              </div>
             </div>
-            <div className="form-group">
-              <label className="form-label">Gender</label>
-              <select name="gender" value={form.gender} onChange={handleChange} className="form-control">
-                <option value="">Select</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
+
+            {/* Footer row: link + submit */}
+            <div className="auth-footer">
+              <span>Already registered? <Link to="/login">Sign in</Link></span>
+              <button type="submit" className="auth-submit-btn" disabled={loading}>
+                {loading ? 'Creating…' : 'Create patient account'}
+              </button>
             </div>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Role</label>
-            <select name="role" value={form.role} onChange={handleChange} className="form-control">
-              <option value="patient">Patient</option>
-              <option value="doctor">Doctor</option>
-            </select>
-          </div>
-
-          <button type="submit" className="btn btn-primary" style={{ width:'100%', padding:'11px', fontSize:14 }} disabled={loading}>
-            {loading ? 'Creating account…' : 'Create Account'}
-          </button>
-        </form>
-
-        <div className="auth-footer">
-          Already have an account? <Link to="/login">Sign in</Link>
+          </form>
         </div>
       </div>
     </div>
