@@ -1,16 +1,25 @@
 const Doctor = require('../models/Doctor');
 const User = require('../models/User');
+const Appointment = require('../models/Appointment');
 
 // @desc    Get all doctors with optional search/filtering
 // @route   GET /api/doctors
 // @access  Public
 const getDoctors = async (req, res, next) => {
   try {
-    const { query, specialization } = req.query;
+    const { query, specialization, hospital, minFee, maxFee } = req.query;
 
     let filter = {};
     if (specialization) {
       filter.specialization = { $regex: specialization, $options: 'i' };
+    }
+    if (hospital) {
+      filter.hospital = { $regex: hospital, $options: 'i' };
+    }
+    if (minFee || maxFee) {
+      filter.consultation_fee = {};
+      if (minFee) filter.consultation_fee.$gte = Number(minFee);
+      if (maxFee) filter.consultation_fee.$lte = Number(maxFee);
     }
 
     let doctors = await Doctor.find(filter)
@@ -146,7 +155,10 @@ const updateDoctor = async (req, res, next) => {
     if (req.body.qualifications !== undefined) doctor.qualifications = req.body.qualifications;
     if (req.body.experience_years !== undefined) doctor.experience_years = req.body.experience_years;
     if (req.body.availability_days) doctor.availability_days = req.body.availability_days;
+    if (req.body.time_slots) doctor.time_slots = req.body.time_slots;
+    if (req.body.unavailable_dates !== undefined) doctor.unavailable_dates = req.body.unavailable_dates;
     if (req.body.consultation_fee !== undefined) doctor.consultation_fee = req.body.consultation_fee;
+    if (req.body.hospital !== undefined) doctor.hospital = req.body.hospital;
     if (req.body.about !== undefined) doctor.about = req.body.about;
 
     await doctor.save();
@@ -197,10 +209,139 @@ const deleteDoctor = async (req, res, next) => {
   }
 };
 
+// @desc    Get logged-in doctor's own schedule
+// @route   GET /api/doctors/me/schedule
+// @access  Private (Doctor)
+const getMySchedule = async (req, res, next) => {
+  try {
+    const doctor = await Doctor.findOne({ user: req.user._id });
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: 'Doctor profile not found' });
+    }
+
+    res.json({
+      success: true,
+      schedule: {
+        availability_days: doctor.availability_days,
+        time_slots: doctor.time_slots,
+        unavailable_dates: doctor.unavailable_dates,
+        consultation_fee: doctor.consultation_fee,
+        hospital: doctor.hospital,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update logged-in doctor's schedule settings
+// @route   PUT /api/doctors/me/schedule
+// @access  Private (Doctor)
+const updateSchedule = async (req, res, next) => {
+  try {
+    const doctor = await Doctor.findOne({ user: req.user._id });
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: 'Doctor profile not found' });
+    }
+
+    const { availability_days, time_slots, unavailable_dates, consultation_fee, hospital } = req.body;
+
+    if (availability_days) doctor.availability_days = availability_days;
+    if (time_slots) doctor.time_slots = time_slots;
+    if (unavailable_dates !== undefined) doctor.unavailable_dates = unavailable_dates;
+    if (consultation_fee !== undefined) doctor.consultation_fee = consultation_fee;
+    if (hospital !== undefined) doctor.hospital = hospital;
+
+    await doctor.save();
+
+    res.json({
+      success: true,
+      schedule: {
+        availability_days: doctor.availability_days,
+        time_slots: doctor.time_slots,
+        unavailable_dates: doctor.unavailable_dates,
+        consultation_fee: doctor.consultation_fee,
+        hospital: doctor.hospital,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get available time slots for a doctor on a given date
+// @route   GET /api/doctors/:id/available-slots?date=YYYY-MM-DD
+// @access  Public
+const getAvailableSlots = async (req, res, next) => {
+  try {
+    const { date } = req.query;
+    if (!date) {
+      return res.status(400).json({ success: false, message: 'date query parameter is required (YYYY-MM-DD)' });
+    }
+
+    const doctor = await Doctor.findById(req.params.id);
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: 'Doctor not found' });
+    }
+
+    // Check if day-of-week is in availability_days
+    const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    const requestedDate = new Date(date);
+    const dayOfWeek = dayNames[requestedDate.getUTCDay()];
+
+    if (!doctor.availability_days.includes(dayOfWeek)) {
+      return res.json({ success: true, available: false, reason: 'Doctor is not available on this day', slots: [] });
+    }
+
+    // Check if date is in unavailable_dates
+    const isBlocked = doctor.unavailable_dates.some((ud) => {
+      const blocked = new Date(ud);
+      return (
+        blocked.getUTCFullYear() === requestedDate.getUTCFullYear() &&
+        blocked.getUTCMonth() === requestedDate.getUTCMonth() &&
+        blocked.getUTCDate() === requestedDate.getUTCDate()
+      );
+    });
+
+    if (isBlocked) {
+      return res.json({ success: true, available: false, reason: 'Doctor has marked this date as unavailable', slots: [] });
+    }
+
+    // Get already-booked appointment times for this doctor on this date
+    const startOfDay = new Date(date);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    const endOfDay = new Date(date);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
+    const bookedAppointments = await Appointment.find({
+      doctor: doctor._id,
+      appointment_date: { $gte: startOfDay, $lte: endOfDay },
+      status: { $in: ['pending', 'approved'] },
+    });
+
+    const bookedTimes = bookedAppointments.map((a) => a.appointment_time);
+
+    // Filter out booked slots from doctor's time_slots
+    const availableSlots = doctor.time_slots.filter((slot) => !bookedTimes.includes(slot));
+
+    res.json({
+      success: true,
+      available: true,
+      consultation_fee: doctor.consultation_fee,
+      slots: availableSlots,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getDoctors,
   getDoctorById,
   createDoctor,
   updateDoctor,
   deleteDoctor,
+  getMySchedule,
+  updateSchedule,
+  getAvailableSlots,
 };

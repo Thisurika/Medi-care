@@ -95,6 +95,33 @@ export default function Register() {
           {error && <div className="error-msg">{error}</div>}
 
           <form onSubmit={handleSubmit}>
+            {/* Role Selection */}
+            <div className="form-group" style={{ marginBottom: 16 }}>
+              <label className="form-label">I am registering as a</label>
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input
+                    type="radio"
+                    name="role"
+                    value="patient"
+                    checked={form.role === 'patient'}
+                    onChange={handleChange}
+                  />
+                  Patient
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input
+                    type="radio"
+                    name="role"
+                    value="doctor"
+                    checked={form.role === 'doctor'}
+                    onChange={handleChange}
+                  />
+                  Doctor
+                </label>
+              </div>
+            </div>
+
             {/* Row: Name + Phone */}
             <div className="form-row">
               <div className="form-group">
@@ -179,7 +206,7 @@ export default function Register() {
             <div className="auth-footer">
               <span>Already registered? <Link to="/login">Sign in</Link></span>
               <button type="submit" className="auth-submit-btn" disabled={loading}>
-                {loading ? 'Creating…' : 'Create patient account'}
+                {loading ? 'Creating…' : `Create ${form.role} account`}
               </button>
             </div>
           </form>

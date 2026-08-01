@@ -15,6 +15,7 @@ import Feedback         from './pages/Feedback';
 import Doctors          from './pages/Doctors';
 import Services         from './pages/Services';
 import CreatePrescription from './pages/Doctor/CreatePrescription';
+import ScheduleManagement from './pages/Doctor/ScheduleManagement';
 import MedicineReminders  from './pages/Patient/MedicineReminders';
 
 export default function App() {
@@ -41,6 +42,7 @@ export default function App() {
 
           {/* Doctor only */}
           <Route path="/prescriptions/new" element={<ProtectedRoute roles={['doctor']}><CreatePrescription /></ProtectedRoute>} />
+          <Route path="/schedule" element={<ProtectedRoute roles={['doctor']}><ScheduleManagement /></ProtectedRoute>} />
 
           {/* Admin only */}
           <Route path="/doctors"  element={<ProtectedRoute roles={['admin']}><Doctors /></ProtectedRoute>} />
