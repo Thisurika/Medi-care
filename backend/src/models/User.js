@@ -49,6 +49,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    medicalHistory: {
+      diseases: [{ type: String }],
+      allergies: [{ type: String }],
+      bloodGroup: { type: String, enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', ''], default: '' },
+      height: { type: String, default: '' },
+      weight: { type: String, default: '' },
+      previousSurgeries: [{ type: String }],
+      vaccinations: [{ type: String }]
+    },
   },
   {
     timestamps: true,

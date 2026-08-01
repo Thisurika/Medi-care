@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Calendar, FileText, MessageSquare, Star, Users, Stethoscope, LogOut } from 'lucide-react';
+import { LayoutDashboard, Calendar, FileText, MessageSquare, Star, Users, Stethoscope, LogOut, Pill, FilePlus } from 'lucide-react';
 
 export default function Sidebar() {
   const { user, logout } = useAuth();
@@ -19,6 +19,8 @@ export default function Sidebar() {
     { label: 'Feedback', path: '/feedback', icon: Star, roles: ['admin', 'doctor', 'patient'] },
     { label: 'Doctors', path: '/doctors', icon: Users, roles: ['admin'] },
     { label: 'Services', path: '/services', icon: Stethoscope, roles: ['admin'] },
+    { label: 'Medicines', path: '/medicines', icon: Pill, roles: ['patient'] },
+    { label: 'Prescribe', path: '/prescriptions/new', icon: FilePlus, roles: ['doctor'] },
   ];
 
   const filteredNav = navItems.filter((item) => item.roles.includes(user?.role));
