@@ -38,6 +38,8 @@ app.use('/api/appointments', require('./src/routes/appointmentRoutes'));
 app.use('/api/reports', require('./src/routes/reportRoutes'));
 app.use('/api/feedback', require('./src/routes/feedbackRoutes'));
 app.use('/api/messages', require('./src/routes/messageRoutes'));
+app.use('/api/prescriptions', require('./src/routes/prescriptionRoutes'));
+
 
 // Error Middlewares
 const { notFound, errorHandler } = require('./src/middleware/errorMiddleware');

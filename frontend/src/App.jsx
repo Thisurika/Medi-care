@@ -14,6 +14,8 @@ import Messages         from './pages/Messages';
 import Feedback         from './pages/Feedback';
 import Doctors          from './pages/Doctors';
 import Services         from './pages/Services';
+import CreatePrescription from './pages/Doctor/CreatePrescription';
+import MedicineReminders  from './pages/Patient/MedicineReminders';
 
 export default function App() {
   return (
@@ -33,6 +35,12 @@ export default function App() {
           <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
           <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
           <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
+          
+          {/* Patient only */}
+          <Route path="/medicines" element={<ProtectedRoute roles={['patient']}><MedicineReminders /></ProtectedRoute>} />
+
+          {/* Doctor only */}
+          <Route path="/prescriptions/new" element={<ProtectedRoute roles={['doctor']}><CreatePrescription /></ProtectedRoute>} />
 
           {/* Admin only */}
           <Route path="/doctors"  element={<ProtectedRoute roles={['admin']}><Doctors /></ProtectedRoute>} />
