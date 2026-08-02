@@ -15,7 +15,7 @@ router.get('/dashboard/stats', protect, getDashboardStats);
 
 router
   .route('/')
-  .get(protect, authorize('admin'), getUsers)
+  .get(protect, authorize('admin', 'doctor'), getUsers)
   .post(protect, authorize('admin'), createUser);
 
 router
