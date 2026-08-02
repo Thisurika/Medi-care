@@ -4,6 +4,7 @@ import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import { ArrowLeft, Clock, DollarSign, AlertCircle } from 'lucide-react';
+import ReviewSection from '../components/ReviewSection';
 
 export default function BookAppointment() {
   const { user } = useAuth();
@@ -243,6 +244,12 @@ export default function BookAppointment() {
             </button>
           </form>
         </div>
+
+        {form.doctor_id && (
+          <div style={{ marginTop: 24 }}>
+            <ReviewSection doctorId={form.doctor_id} />
+          </div>
+        )}
       </div>
     </Layout>
   );

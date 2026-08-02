@@ -1,5 +1,6 @@
 const Appointment = require('../models/Appointment');
 const Doctor = require('../models/Doctor');
+const { createNotification } = require('../utils/notificationHelper');
 
 // @desc    Book a new appointment
 // @route   POST /api/appointments
@@ -31,6 +32,18 @@ const createAppointment = async (req, res, next) => {
         populate: { path: 'user', select: 'name email phone profile_photo' },
       })
       .populate('patient', 'name email phone gender');
+
+    // Notify the doctor about the new appointment
+    const doctorUser = populatedAppointment.doctor?.user;
+    if (doctorUser) {
+      createNotification({
+        recipientId: doctorUser._id || doctorUser,
+        type: 'appointment',
+        title: 'New Appointment Request',
+        message: `${populatedAppointment.patient?.name || 'A patient'} booked an appointment for ${new Date(appointment_date).toLocaleDateString()} at ${appointment_time}.`,
+        link: `/appointments/${appointment._id}`,
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -158,6 +171,48 @@ const updateAppointmentStatus = async (req, res, next) => {
         populate: { path: 'user', select: 'name email phone profile_photo' },
       })
       .populate('patient', 'name email phone gender');
+
+    // Send notifications based on status change
+    const doctorName = updatedAppointment.doctor?.user?.name || 'Your doctor';
+    const patientName = updatedAppointment.patient?.name || 'A patient';
+    const apptDate = new Date(updatedAppointment.appointment_date).toLocaleDateString();
+
+    if (status === 'approved') {
+      createNotification({
+        recipientId: updatedAppointment.patient._id,
+        type: 'appointment',
+        title: 'Appointment Approved',
+        message: `Dr. ${doctorName} approved your appointment on ${apptDate} at ${updatedAppointment.appointment_time}.`,
+        link: `/appointments/${appointment._id}`,
+      });
+    } else if (status === 'cancelled') {
+      // Notify the other party
+      if (req.user.role === 'patient' && updatedAppointment.doctor?.user) {
+        createNotification({
+          recipientId: updatedAppointment.doctor.user._id || updatedAppointment.doctor.user,
+          type: 'appointment',
+          title: 'Appointment Cancelled',
+          message: `${patientName} cancelled their appointment on ${apptDate}.`,
+          link: '/appointments',
+        });
+      } else {
+        createNotification({
+          recipientId: updatedAppointment.patient._id,
+          type: 'appointment',
+          title: 'Appointment Cancelled',
+          message: `Dr. ${doctorName} cancelled your appointment on ${apptDate}.`,
+          link: '/appointments',
+        });
+      }
+    } else if (status === 'completed') {
+      createNotification({
+        recipientId: updatedAppointment.patient._id,
+        type: 'appointment',
+        title: 'Appointment Completed',
+        message: `Your appointment with Dr. ${doctorName} on ${apptDate} has been marked as completed.`,
+        link: `/appointments/${appointment._id}`,
+      });
+    }
 
     res.json({
       success: true,

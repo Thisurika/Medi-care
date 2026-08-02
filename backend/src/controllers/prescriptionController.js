@@ -1,6 +1,7 @@
 const Prescription = require('../models/Prescription');
 const MedicineLog = require('../models/MedicineLog');
 const PDFDocument = require('pdfkit');
+const { createNotification } = require('../utils/notificationHelper');
 
 // @desc    Create a new prescription and generate medicine logs
 // @route   POST /api/prescriptions
@@ -68,6 +69,16 @@ const createPrescription = async (req, res) => {
     if (logsToCreate.length > 0) {
       await MedicineLog.insertMany(logsToCreate);
     }
+
+    // Notify the patient about the new prescription
+    const medNames = medicines.map(m => m.name).join(', ');
+    createNotification({
+      recipientId: patientId,
+      type: 'prescription',
+      title: 'New Prescription',
+      message: `Dr. ${req.user.name || 'Your doctor'} prescribed: ${medNames.substring(0, 100)}${medNames.length > 100 ? '…' : ''}.`,
+      link: '/medicines',
+    });
 
     res.status(201).json(createdPrescription);
   } catch (error) {
