@@ -4,6 +4,13 @@ import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import { Plus, Trash2, CheckCircle, ArrowLeft } from 'lucide-react';
 
+const getLocalDateString = (d = new Date()) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export default function CreatePrescription() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -16,7 +23,7 @@ export default function CreatePrescription() {
   const [appointmentId, setAppointmentId] = useState(initialApptId);
   const [notes, setNotes] = useState('');
   const [medicines, setMedicines] = useState([
-    { name: '', dosage: '', instructions: '', durationDays: 1, startDate: new Date().toISOString().split('T')[0], endDate: new Date().toISOString().split('T')[0], timing: { morning: false, afternoon: false, night: false } }
+    { name: '', dosage: '', instructions: '', durationDays: 1, startDate: getLocalDateString(), endDate: getLocalDateString(), timing: { morning: false, afternoon: false, night: false } }
   ]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -29,7 +36,7 @@ export default function CreatePrescription() {
   }, []);
 
   const handleAddMedicine = () => {
-    setMedicines([...medicines, { name: '', dosage: '', instructions: '', durationDays: 1, startDate: new Date().toISOString().split('T')[0], endDate: new Date().toISOString().split('T')[0], timing: { morning: false, afternoon: false, night: false } }]);
+    setMedicines([...medicines, { name: '', dosage: '', instructions: '', durationDays: 1, startDate: getLocalDateString(), endDate: getLocalDateString(), timing: { morning: false, afternoon: false, night: false } }]);
   };
 
   const handleRemoveMedicine = (index) => {
@@ -47,10 +54,11 @@ export default function CreatePrescription() {
       updated[index][field] = value;
       // Auto-calculate end date based on duration
       if (field === 'durationDays' || field === 'startDate') {
-        const start = new Date(updated[index].startDate);
+        const startParts = (updated[index].startDate || getLocalDateString()).split('-').map(Number);
+        const start = new Date(startParts[0], startParts[1] - 1, startParts[2]);
         const duration = parseInt(updated[index].durationDays, 10) || 1;
         start.setDate(start.getDate() + (duration - 1));
-        updated[index].endDate = start.toISOString().split('T')[0];
+        updated[index].endDate = getLocalDateString(start);
       }
     }
     setMedicines(updated);
