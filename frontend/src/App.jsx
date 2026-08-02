@@ -17,6 +17,7 @@ import Services         from './pages/Services';
 import CreatePrescription from './pages/Doctor/CreatePrescription';
 import ScheduleManagement from './pages/Doctor/ScheduleManagement';
 import MedicineReminders  from './pages/Patient/MedicineReminders';
+import DoctorPrescriptions from './pages/DoctorPrescriptions';
 
 export default function App() {
   return (
@@ -40,8 +41,12 @@ export default function App() {
           {/* Patient only */}
           <Route path="/medicines" element={<ProtectedRoute roles={['patient']}><MedicineReminders /></ProtectedRoute>} />
 
+          {/* Prescriptions — shared */}
+          <Route path="/prescriptions" element={<ProtectedRoute roles={['doctor', 'patient', 'admin']}><DoctorPrescriptions /></ProtectedRoute>} />
+
           {/* Doctor only */}
           <Route path="/prescriptions/new" element={<ProtectedRoute roles={['doctor']}><CreatePrescription /></ProtectedRoute>} />
+          <Route path="/prescriptions/:id/edit" element={<ProtectedRoute roles={['doctor', 'admin']}><CreatePrescription /></ProtectedRoute>} />
           <Route path="/schedule" element={<ProtectedRoute roles={['doctor']}><ScheduleManagement /></ProtectedRoute>} />
 
           {/* Admin only */}

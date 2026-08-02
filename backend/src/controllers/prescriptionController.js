@@ -236,9 +236,144 @@ const downloadPrescriptionPDF = async (req, res) => {
   }
 };
 
+// @desc    Get single prescription by ID
+// @route   GET /api/prescriptions/:id
+// @access  Private
+const getPrescriptionById = async (req, res) => {
+  try {
+    const prescription = await Prescription.findById(req.params.id)
+      .populate('doctor', 'name email profile_photo')
+      .populate('patient', 'name email profile_photo');
+
+    if (!prescription) {
+      return res.status(404).json({ message: 'Prescription not found' });
+    }
+
+    res.json(prescription);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// @desc    Update prescription and regenerate medicine logs
+// @route   PUT /api/prescriptions/:id
+// @access  Private (Doctor / Admin)
+const updatePrescription = async (req, res) => {
+  try {
+    const { patientId, medicines, notes } = req.body;
+
+    const prescription = await Prescription.findById(req.params.id);
+
+    if (!prescription) {
+      return res.status(404).json({ message: 'Prescription not found' });
+    }
+
+    // Check authorization: doctor who created it or admin
+    if (req.user.role !== 'admin' && prescription.doctor.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to edit this prescription' });
+    }
+
+    if (patientId) prescription.patient = patientId;
+    if (notes !== undefined) prescription.notes = notes;
+    if (medicines && medicines.length > 0) prescription.medicines = medicines;
+
+    const updatedPrescription = await prescription.save();
+
+    // Delete old logs for this prescription
+    await MedicineLog.deleteMany({ prescription: prescription._id });
+
+    // Regenerate Medicine Logs
+    const logsToCreate = [];
+    
+    for (const medicine of prescription.medicines) {
+      const startParts = (medicine.startDate || new Date().toISOString().split('T')[0]).split('-').map(Number);
+      const endParts = (medicine.endDate || new Date().toISOString().split('T')[0]).split('-').map(Number);
+
+      const start = new Date(startParts[0], startParts[1] - 1, startParts[2], 0, 0, 0);
+      const end = new Date(endParts[0], endParts[1] - 1, endParts[2], 23, 59, 59);
+
+      const medId = new mongoose.Types.ObjectId();
+
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const scheduledDate = new Date(d);
+        scheduledDate.setHours(0, 0, 0, 0);
+
+        if (medicine.timing.morning) {
+          logsToCreate.push({
+            patient: prescription.patient,
+            prescription: prescription._id,
+            medicineId: medId,
+            medicineName: medicine.name,
+            scheduledDate: new Date(scheduledDate),
+            timeOfDay: 'morning',
+          });
+        }
+        if (medicine.timing.afternoon) {
+          logsToCreate.push({
+            patient: prescription.patient,
+            prescription: prescription._id,
+            medicineId: medId,
+            medicineName: medicine.name,
+            scheduledDate: new Date(scheduledDate),
+            timeOfDay: 'afternoon',
+          });
+        }
+        if (medicine.timing.night) {
+          logsToCreate.push({
+            patient: prescription.patient,
+            prescription: prescription._id,
+            medicineId: medId,
+            medicineName: medicine.name,
+            scheduledDate: new Date(scheduledDate),
+            timeOfDay: 'night',
+          });
+        }
+      }
+    }
+
+    if (logsToCreate.length > 0) {
+      await MedicineLog.insertMany(logsToCreate);
+    }
+
+    res.json(updatedPrescription);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// @desc    Delete prescription and associated medicine logs
+// @route   DELETE /api/prescriptions/:id
+// @access  Private (Doctor / Admin)
+const deletePrescription = async (req, res) => {
+  try {
+    const prescription = await Prescription.findById(req.params.id);
+
+    if (!prescription) {
+      return res.status(404).json({ message: 'Prescription not found' });
+    }
+
+    if (req.user.role !== 'admin' && prescription.doctor.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to delete this prescription' });
+    }
+
+    await MedicineLog.deleteMany({ prescription: prescription._id });
+    await Prescription.findByIdAndDelete(req.params.id);
+
+    res.json({ message: 'Prescription deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
 module.exports = {
   createPrescription,
   getPrescriptions,
+  getPrescriptionById,
+  updatePrescription,
+  deletePrescription,
   getTodaysMedicines,
   updateMedicineLogStatus,
   downloadPrescriptionPDF
