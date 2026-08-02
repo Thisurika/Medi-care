@@ -1,5 +1,6 @@
 const Feedback = require('../models/Feedback');
 const Doctor = require('../models/Doctor');
+const { createNotification } = require('../utils/notificationHelper');
 
 // @desc    Submit feedback/rating for a doctor
 // @route   POST /api/feedback
@@ -26,6 +27,17 @@ const createFeedback = async (req, res, next) => {
         path: 'doctor',
         populate: { path: 'user', select: 'name' },
       });
+
+    // Notify the doctor about the new review
+    if (doctor.user) {
+      createNotification({
+        recipientId: doctor.user,
+        type: 'feedback',
+        title: 'New Review Received',
+        message: `${req.user.name || 'A patient'} left a ${rating}-star review${comment ? ': "' + comment.substring(0, 80) + (comment.length > 80 ? '…' : '') + '"' : '.'}.`,
+        link: '/feedback',
+      });
+    }
 
     res.status(201).json({
       success: true,

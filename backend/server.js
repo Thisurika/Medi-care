@@ -39,6 +39,7 @@ app.use('/api/reports', require('./src/routes/reportRoutes'));
 app.use('/api/feedback', require('./src/routes/feedbackRoutes'));
 app.use('/api/messages', require('./src/routes/messageRoutes'));
 app.use('/api/prescriptions', require('./src/routes/prescriptionRoutes'));
+app.use('/api/notifications', require('./src/routes/notificationRoutes'));
 
 
 // Error Middlewares

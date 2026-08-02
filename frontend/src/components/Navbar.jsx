@@ -1,5 +1,5 @@
 import { useAuth } from '../context/AuthContext';
-import { Bell } from 'lucide-react';
+import NotificationDropdown from './NotificationDropdown';
 
 export default function Navbar() {
   const { user } = useAuth();
@@ -21,9 +21,7 @@ export default function Navbar() {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-        <button className="btn-icon" title="Notifications">
-          <Bell size={18} />
-        </button>
+        <NotificationDropdown />
 
         <div className="user-badge">
           <div className="avatar-circle">
@@ -38,3 +36,4 @@ export default function Navbar() {
     </header>
   );
 }
+
