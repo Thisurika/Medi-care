@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Calendar, FileText, MessageSquare, Star, Users, Stethoscope, LogOut, Pill, FilePlus, CalendarClock } from 'lucide-react';
+import { LayoutDashboard, Calendar, FileText, MessageSquare, Star, Users, Stethoscope, LogOut, Pill, ClipboardList, CalendarClock } from 'lucide-react';
 
 export default function Sidebar() {
   const { user, logout } = useAuth();
@@ -20,7 +20,8 @@ export default function Sidebar() {
     { label: 'Doctors', path: '/doctors', icon: Users, roles: ['admin'] },
     { label: 'Services', path: '/services', icon: Stethoscope, roles: ['admin'] },
     { label: 'Medicines', path: '/medicines', icon: Pill, roles: ['patient'] },
-    { label: 'Prescribe', path: '/prescriptions/new', icon: FilePlus, roles: ['doctor'] },
+    { label: 'Prescriptions', path: '/prescriptions', icon: ClipboardList, roles: ['patient'] },
+    { label: 'Prescriptions', path: '/prescriptions', icon: ClipboardList, roles: ['doctor'] },
     { label: 'Schedule', path: '/schedule', icon: CalendarClock, roles: ['doctor'] },
   ];
 

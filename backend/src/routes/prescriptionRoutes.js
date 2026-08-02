@@ -3,6 +3,9 @@ const router = express.Router();
 const {
   createPrescription,
   getPrescriptions,
+  getPrescriptionById,
+  updatePrescription,
+  deletePrescription,
   getTodaysMedicines,
   updateMedicineLogStatus,
   downloadPrescriptionPDF,
@@ -21,5 +24,10 @@ router.route('/medicines/:logId')
 
 router.route('/:id/pdf')
   .get(protect, downloadPrescriptionPDF);
+
+router.route('/:id')
+  .get(protect, getPrescriptionById)
+  .put(protect, updatePrescription)
+  .delete(protect, deletePrescription);
 
 module.exports = router;
