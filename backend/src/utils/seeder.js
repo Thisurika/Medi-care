@@ -43,7 +43,7 @@ const importData = async () => {
       email: 'admin@medicareplus.test',
       password: 'password123',
       role: 'admin',
-      phone: '+1 800 555 0199',
+      phone: '0800555019',
       gender: 'Male',
       address: '100 Medical Center Way, Suite 500',
     });
@@ -54,7 +54,7 @@ const importData = async () => {
       email: 'ozella@medicareplus.test',
       password: 'password123',
       role: 'doctor',
-      phone: '+1 555 012 3456',
+      phone: '0771234567',
       gender: 'Female',
       address: '742 Evergreen Terrace',
     });
@@ -64,7 +64,7 @@ const importData = async () => {
       email: 'kelsi@medicareplus.test',
       password: 'password123',
       role: 'doctor',
-      phone: '+1 555 098 7654',
+      phone: '0779876543',
       gender: 'Female',
       address: '123 Health Ave',
     });
@@ -74,7 +74,7 @@ const importData = async () => {
       email: 'germaine@medicareplus.test',
       password: 'password123',
       role: 'doctor',
-      phone: '+1 555 234 5678',
+      phone: '0772345678',
       gender: 'Male',
       address: '456 Clinic Lane',
     });
@@ -121,7 +121,7 @@ const importData = async () => {
       email: 'ollie@medicareplus.test',
       password: 'password123',
       role: 'patient',
-      phone: '+1 555 777 8888',
+      phone: '0777778888',
       gender: 'Male',
       address: '88 Lakeview Drive',
     });
@@ -131,7 +131,7 @@ const importData = async () => {
       email: 'grace@medicareplus.test',
       password: 'password123',
       role: 'patient',
-      phone: '+1 555 999 0000',
+      phone: '0779990000',
       gender: 'Female',
       address: '14 Sunshine Boulevard',
     });

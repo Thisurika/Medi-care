@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Moon, Sun, Shield, Calendar, Activity, Phone, Mail, MapPin } from 'lucide-react';
+import { Moon, Sun, Shield, Calendar, Activity, Phone, Mail, MapPin, Star, Clock, ArrowRight } from 'lucide-react';
 import api from '../api/axios';
 
 const INITIAL_SERVICES = [
@@ -49,11 +49,16 @@ const INITIAL_SERVICES = [
   }
 ];
 
+const AVATAR_COLORS = ['#2563eb','#06b6d4','#8b5cf6','#10b981','#f59e0b','#ef4444'];
+const getColor = n => AVATAR_COLORS[(n?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
+const getInitials = n => (n||'').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+
 export default function Landing() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [services, setServices] = useState(INITIAL_SERVICES);
+  const [featuredDoctors, setFeaturedDoctors] = useState([]);
 
   useEffect(() => {
     // Attempt to load dynamic services from API if available
@@ -88,10 +93,33 @@ export default function Landing() {
     fetchServices();
   }, []);
 
+  // Fetch featured doctors
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const { data } = await api.get('/doctors');
+        const docs = data.doctors || data.data || [];
+        // Already sorted by rating_avg desc from backend
+        setFeaturedDoctors(docs.slice(0, 6));
+      } catch {
+        // Silent fail
+      }
+    };
+    fetchDoctors();
+  }, []);
+
   const scrollToSection = (id) => {
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleBookDoctor = (doctorId) => {
+    if (user) {
+      navigate(`/appointments/new?doctor=${doctorId}`);
+    } else {
+      navigate('/login');
     }
   };
 
@@ -118,7 +146,7 @@ export default function Landing() {
 
           {/* Navigation Links */}
           <nav className="landing-nav-links">
-            <a href="#doctors" onClick={(e) => { e.preventDefault(); navigate(user ? '/doctors' : '/login'); }}>Doctors</a>
+            <a href="#doctors" onClick={(e) => { e.preventDefault(); scrollToSection('featured-doctors-section'); }}>Doctors</a>
             <a href="#services" onClick={(e) => { e.preventDefault(); scrollToSection('services-section'); }}>Services</a>
             <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about-section'); }}>About</a>
             <a href="#contact" onClick={(e) => { e.preventDefault(); scrollToSection('contact-section'); }}>Contact</a>
@@ -174,7 +202,7 @@ export default function Landing() {
               <button className="btn-get-started" onClick={() => navigate(user ? '/dashboard' : '/register')}>
                 Get Started
               </button>
-              <button className="btn-browse-doctors" onClick={() => navigate(user ? '/appointments/new' : '/login')}>
+              <button className="btn-browse-doctors" onClick={() => scrollToSection('featured-doctors-section')}>
                 Browse Doctors
               </button>
             </div>
@@ -216,6 +244,73 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* Featured Doctors Section */}
+      {featuredDoctors.length > 0 && (
+        <section className="featured-doctors-section" id="featured-doctors-section">
+          <div className="featured-doctors-container">
+            <div className="featured-doctors-header">
+              <div>
+                <span className="featured-doctors-label">Top-rated clinicians</span>
+                <h2 className="featured-doctors-title">Featured doctors</h2>
+              </div>
+              <a
+                href="#"
+                className="featured-see-all"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate(user ? '/doctors' : '/login');
+                }}
+              >
+                See all <ArrowRight size={16} />
+              </a>
+            </div>
+
+            <div className="featured-doctors-grid">
+              {featuredDoctors.map((doc) => {
+                const name = doc.user?.name || '—';
+                const spec = doc.specialization || 'General';
+                const aboutText = doc.about || 'Experienced medical professional dedicated to providing quality patient care.';
+                const rating = doc.rating_avg?.toFixed(1) || '5.0';
+                const exp = doc.experience_years || 0;
+
+                return (
+                  <div key={doc._id} className="featured-doctor-card">
+                    <div className="featured-doctor-card-top">
+                      <div className="featured-doctor-avatar" style={{ background: getColor(name) }}>
+                        {getInitials(name)}
+                      </div>
+                      <div className="featured-doctor-info">
+                        <div className="featured-doctor-name">{name}</div>
+                        <div className="featured-doctor-spec">{spec}</div>
+                      </div>
+                    </div>
+
+                    <p className="featured-doctor-about">{aboutText}</p>
+
+                    <div className="featured-doctor-bottom">
+                      <div className="featured-doctor-stats">
+                        <span className="featured-doctor-rating">
+                          <Star size={13} fill="#f59e0b" color="#f59e0b" /> Rating {rating}
+                        </span>
+                        <span className="featured-doctor-exp">
+                          {exp} yrs exp
+                        </span>
+                      </div>
+                      <button
+                        className="featured-doctor-book-btn"
+                        onClick={() => handleBookDoctor(doc._id)}
+                      >
+                        Book with {name.split(' ')[0]} {name.split(' ').length > 1 ? name.split(' ').slice(1).join(' ') : ''}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Feature Highlights Section */}
       <section className="landing-features-section" id="about-section">
@@ -289,3 +384,4 @@ export default function Landing() {
     </div>
   );
 }
+

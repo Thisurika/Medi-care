@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
@@ -9,9 +9,11 @@ import ReviewSection from '../components/ReviewSection';
 export default function BookAppointment() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const preselectedDoctor = searchParams.get('doctor') || '';
   const [doctors, setDoctors] = useState([]);
   const [patients, setPatients] = useState([]);
-  const [form, setForm] = useState({ doctor_id: '', patient_id: '', appointment_date: '', appointment_time: '', notes: '' });
+  const [form, setForm] = useState({ doctor_id: preselectedDoctor, patient_id: '', appointment_date: '', appointment_time: '', notes: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');

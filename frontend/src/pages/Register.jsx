@@ -2,12 +2,18 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: '', email: '', password: '', confirmPassword: '',
-    role: 'patient', phone: '', gender: '', address: ''
+    role: 'patient', phone: '', gender: '', address: '',
+    // Doctor-specific fields
+    specialization: '', qualifications: '', experience_years: 1,
+    consultation_fee: 100, availability_days: ['MON', 'TUE', 'WED', 'THU', 'FRI'],
+    about: ''
   });
   const [error, setError] = useState('');
   const [phoneError, setPhoneError] = useState('');
@@ -28,6 +34,15 @@ export default function Register() {
     }
   };
 
+  const toggleDay = (day) => {
+    setForm(p => {
+      const days = p.availability_days.includes(day)
+        ? p.availability_days.filter(d => d !== day)
+        : [...p.availability_days, day];
+      return { ...p, availability_days: days };
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -44,6 +59,15 @@ export default function Register() {
     setLoading(true);
     try {
       const { confirmPassword, ...payload } = form;
+      // Only include doctor fields when role is doctor
+      if (payload.role !== 'doctor') {
+        delete payload.specialization;
+        delete payload.qualifications;
+        delete payload.experience_years;
+        delete payload.consultation_fee;
+        delete payload.availability_days;
+        delete payload.about;
+      }
       await register(payload);
       navigate('/dashboard');
     } catch (err) {
@@ -90,7 +114,9 @@ export default function Register() {
               <div className="auth-logo-label">Secure Access</div>
             </div>
           </div>
-          <div className="auth-title">Sign in to your portal</div>
+          <div className="auth-title">
+            {form.role === 'doctor' ? 'Create doctor profile' : 'Sign in to your portal'}
+          </div>
 
           {error && <div className="error-msg">{error}</div>}
 
@@ -122,16 +148,28 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Row: Name + Phone */}
+            {/* Row: Name + Email */}
             <div className="form-row">
               <div className="form-group">
-                <label className="form-label">Full name</label>
+                <label className="form-label">Name</label>
                 <input
                   type="text" name="name" value={form.name}
                   onChange={handleChange} className="form-control"
                   placeholder="" required
                 />
               </div>
+              <div className="form-group">
+                <label className="form-label">Email</label>
+                <input
+                  type="email" name="email" value={form.email}
+                  onChange={handleChange} className="form-control"
+                  placeholder="" required
+                />
+              </div>
+            </div>
+
+            {/* Row: Phone + Gender */}
+            <div className="form-row">
               <div className="form-group">
                 <label className="form-label">Phone</label>
                 <input
@@ -145,18 +183,6 @@ export default function Register() {
                     {phoneError}
                   </span>
                 )}
-              </div>
-            </div>
-
-            {/* Row: Email + Gender */}
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">Email</label>
-                <input
-                  type="email" name="email" value={form.email}
-                  onChange={handleChange} className="form-control"
-                  placeholder="" required
-                />
               </div>
               <div className="form-group">
                 <label className="form-label">Gender</label>
@@ -172,18 +198,16 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Address */}
-            <div className="form-group">
-              <label className="form-label">Address</label>
-              <input
-                type="text" name="address" value={form.address}
-                onChange={handleChange} className="form-control"
-                placeholder=""
-              />
-            </div>
-
-            {/* Row: Password + Confirm */}
+            {/* Row: Address + Password */}
             <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Address</label>
+                <input
+                  type="text" name="address" value={form.address}
+                  onChange={handleChange} className="form-control"
+                  placeholder=""
+                />
+              </div>
               <div className="form-group">
                 <label className="form-label">Password</label>
                 <input
@@ -192,21 +216,100 @@ export default function Register() {
                   placeholder="" required minLength={6}
                 />
               </div>
-              <div className="form-group">
-                <label className="form-label">Confirm password</label>
-                <input
-                  type="password" name="confirmPassword" value={form.confirmPassword}
-                  onChange={handleChange} className="form-control"
-                  placeholder="" required minLength={6}
-                />
-              </div>
             </div>
+
+            {/* Confirm password */}
+            <div className="form-group">
+              <label className="form-label">Confirm password</label>
+              <input
+                type="password" name="confirmPassword" value={form.confirmPassword}
+                onChange={handleChange} className="form-control"
+                placeholder="" required minLength={6}
+              />
+            </div>
+
+            {/* ── Doctor-specific fields ── */}
+            {form.role === 'doctor' && (
+              <div className="doctor-register-fields">
+                <div className="doctor-fields-divider">
+                  <span>Doctor Profile Details</span>
+                </div>
+
+                {/* Row: Specialization + Qualifications */}
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Specialization</label>
+                    <input
+                      type="text" name="specialization" value={form.specialization}
+                      onChange={handleChange} className="form-control"
+                      placeholder="e.g. Dermatology" required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Qualifications</label>
+                    <input
+                      type="text" name="qualifications" value={form.qualifications}
+                      onChange={handleChange} className="form-control"
+                      placeholder="e.g. MBBS, MD"
+                    />
+                  </div>
+                </div>
+
+                {/* Row: Experience + Consultation Fee */}
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Experience (years)</label>
+                    <input
+                      type="number" name="experience_years" value={form.experience_years}
+                      onChange={handleChange} className="form-control"
+                      min={0} max={60}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Consultation fee</label>
+                    <input
+                      type="number" name="consultation_fee" value={form.consultation_fee}
+                      onChange={handleChange} className="form-control"
+                      min={0}
+                    />
+                  </div>
+                </div>
+
+                {/* Availability Days */}
+                <div className="form-group">
+                  <label className="form-label">Availability days</label>
+                  <div className="availability-day-row">
+                    {DAYS.map(day => (
+                      <label key={day} className="day-checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={form.availability_days.includes(day)}
+                          onChange={() => toggleDay(day)}
+                        />
+                        <span>{day}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* About */}
+                <div className="form-group">
+                  <label className="form-label">About</label>
+                  <textarea
+                    name="about" value={form.about}
+                    onChange={handleChange} className="form-control"
+                    placeholder="Brief description about your practice..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Footer row: link + submit */}
             <div className="auth-footer">
               <span>Already registered? <Link to="/login">Sign in</Link></span>
               <button type="submit" className="auth-submit-btn" disabled={loading}>
-                {loading ? 'Creating…' : `Create ${form.role} account`}
+                {loading ? 'Creating…' : form.role === 'doctor' ? 'Create doctor account' : 'Create patient account'}
               </button>
             </div>
           </form>
