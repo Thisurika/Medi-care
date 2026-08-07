@@ -452,7 +452,7 @@ This project is licensed under the MIT License.
 
 # 👨‍💻 Authors
 
-Developed with ❤️ by the Medicare Development Team.
+Developed with ❤️ by the Thisurika.
 
 ---
 
