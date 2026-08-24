@@ -452,7 +452,7 @@ This project is licensed under the MIT License.
 
 # 👨‍💻 Authors
 
-Developed with ❤️ by the Thisurika.
+Developed by the Thisurika SLIIT Student
 
 ---
 
