@@ -1,6 +1,6 @@
 # Medi-care
 
-A modern healthcare management system that connects **Patients**, **Doctors**, and **Administrators** in one platform. Medicare simplifies appointment scheduling, medical record management, prescriptions, and medicine reminders while providing an efficient healthcare experience.
+A modern healthcare management system that connects **Patients**, **Doctors**, and **Administrators** in one platform. Medicare simplifies appointment scheduling, medical record management, prescriptions, and medicine reminders while providing an efficient healthcare experience..............
 
 ---
 
