@@ -390,7 +390,7 @@ git checkout -b feature/your-feature-name
 
 ## Make Your Changes
 
-Implement your feature or bug fix.
+Implement your feature or bug fix....
 
 ---
 
