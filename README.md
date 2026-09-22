@@ -16,6 +16,7 @@ The system allows patients to book appointments, doctors to manage consultations
 
 # ✨ Features
 
+
 ## 👤 Authentication
 
 - Secure Login
