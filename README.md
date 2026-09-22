@@ -7,6 +7,7 @@ A modern healthcare management system that connects **Patients**, **Doctors**, a
 
 ## 📖 Overview
 
+
 Medicare is a full-stack healthcare management web application designed to improve communication between patients and healthcare providers.
 
 The system allows patients to book appointments, doctors to manage consultations and upload medical records, and administrators to oversee the entire platform.
