@@ -30,6 +30,7 @@ The system allows patients to book appointments, doctors to manage consultations
 
 ## 🧑 Patient Features
 
+
 - Register/Login
 - Edit Profile
 - Search Doctors
