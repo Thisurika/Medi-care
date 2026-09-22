@@ -53,6 +53,7 @@ The system allows patients to book appointments, doctors to manage consultations
 
 ## 👨‍⚕️ Doctor Features
 
+
 - Register/Login
 - Edit Profile
 - Manage Availability
