@@ -63,7 +63,7 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
+//secure password storage and comparison
 // Hash password prior to saving
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
