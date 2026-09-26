@@ -16,6 +16,7 @@ const generateToken = (id) => {
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
+
 const register = async (req, res, next) => {
   try {
     const { name, email, password, role, phone, gender, address } = req.body;
@@ -25,7 +26,7 @@ const register = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'User already exists with this email' });
     }
 
-    // Default role is patient unless specified and allowed
+    // Default role is patient unless specified and allowed 
     const userRole = ['patient', 'doctor'].includes(role) ? role : 'patient';
 
     const user = await User.create({
