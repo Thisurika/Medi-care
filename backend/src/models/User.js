@@ -73,7 +73,7 @@ userSchema.pre('save', async function (next) {
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
-//2
+//comment: The matchPassword method is used to compare the entered password with the hashed password stored in the database. It uses bcrypt's compare function to perform the comparison and returns a boolean indicating whether the passwords match or not.
 // Compare password method
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
