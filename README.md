@@ -115,8 +115,7 @@ Patients can:
 - View Reports
 - Download Reports
 - Access Medical History
-- 
-
+  
 ---
 
 ## 🔔 Notification System
